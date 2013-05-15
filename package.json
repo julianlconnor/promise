@@ -1,0 +1,16 @@
+{
+    "name": "Promise",
+    "version": "0.0.1",
+    "description": "A implementation of promises.",
+    "author": "Julian Connor",
+    "main": "index",
+    "scripts": {
+        "test": "make test"
+    },
+    "devDependencies": {
+        "mocha": "1.9.x",
+        "sinon": "1.7.2",
+        "expect": "0.2.x"
+    }
+}
+
