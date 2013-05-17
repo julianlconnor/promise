@@ -6,23 +6,31 @@
     obj.on = this.on;
     obj.off = this.off;
     obj.trigger = this.trigger;
-    obj.eventMap = {};
   };
 
-  Events.on = function (evt, callback) {
-    if ( !this.eventMap[evt] ) this.eventMap[evt] = [];
-    this.eventMap[evt].push(callback);
+  function fetchCallbacks(promise, evt) {
+    if ( !promise.eventMap ) promise.eventMap = {};
+    if ( !promise.eventMap[evt] ) promise.eventMap[evt] = [];
+
+    return promise.eventMap[evt];
+  }
+
+  Events.on = function(evt, cb) {
+    var callbacks = fetchCallbacks(this, evt);
+    callbacks.push(cb);
 
     return this;
   };
 
-  Events.off = function (evt, context) {
-    if ( this.eventMap[evt] ) delete this.eventMap[evt];
+  Events.off = function(evt) {
+    if ( this.eventMap && this.eventMap[evt] )
+      delete this.eventMap[evt];
 
     return this;
   };
 
-  Events.trigger = function (evt, args) {
+  Events.trigger = function(evt, args, id) {
+    if ( !this.eventMap ) this.eventMap = {};
     var callbacks = this.eventMap[evt] || [],
         _this = this;
 

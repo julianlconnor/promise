@@ -6,7 +6,9 @@ describe("Promises", function() {
 
   var promise;
   beforeEach(function() {
-    promise = new Promise();
+    promise = new Promise(function(resolve, reject) {
+      
+    });
   });
 
   it("defaults to pending", function() {
@@ -23,6 +25,31 @@ describe("Promises", function() {
     it("may transition to rejected", function() {
       promise.reject();
       expect(promise.state).to.be("rejected");
+    });
+
+    it("and onFulfilled returns a value that is not a promise, the promise must be resolved with that value", function() {
+      promise = new Promise(function(resolve, reject) { });
+      var callback = sinon.spy(),
+          mock, promise2;
+
+      promise2 = promise.then(function(num) { return num; });
+      promise2.then(callback);
+
+      promise.resolve(5);
+
+      expect(callback.calledWith(5)).to.be(true);
+    });
+
+    it("and onRejected returns a value that is not a promise, the promise must be resolved with that value", function() {
+      var onFulfilled = sinon.spy(),
+          onRejected = sinon.spy();
+
+      var promise1 = new Promise(function(resolve, reject) { });
+
+      promise2 = promise1.then(onFulfilled, onRejected);
+      promise1.reject("error");
+
+      expect(onRejected.calledWith("error")).to.be(true);
     });
 
   });
@@ -46,11 +73,12 @@ describe("Promises", function() {
     });
 
     it("must have a reason", function() {
-      promise.reject();
-      expect(promise.reason).to.be.a("string");
+      promise.reject(new Error("FOO"));
+      expect(promise.reason instanceof Error).to.be(true);
     });
 
   });
+
 
 
 });

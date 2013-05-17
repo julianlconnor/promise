@@ -6,7 +6,9 @@ describe("then method", function() {
 
   var promise;
   beforeEach(function() {
-    promise = new Promise();
+    promise = new Promise(function(resolve, reject) {
+      
+    });
   });
 
   it("is defined", function() {
@@ -15,27 +17,28 @@ describe("then method", function() {
 
   it("ignores onFulfilled if not a function", function() {
     promise.then('foo');
-    expect(promise.onFulfilled.length).to.be(0);
+    expect(promise.onFulfilled).to.be(undefined);
   });
 
   it("saves onFulfilled if function", function() {
     promise.then(function() { });
-    expect(promise.onFulfilled.length).to.be(1);
+    expect(promise.onFulfilled).to.be.a("function");
   });
 
   it("ignores onRejected if not a function", function() {
     promise.then(function() { }, 'foo');
-    expect(promise.onRejected.length).to.be(0);
+    expect(promise.onRejected).to.be(undefined);
   });
 
   it("saves onRejected if function", function() {
     promise.then('foo', function() { });
-    expect(promise.onRejected.length).to.be(1);
+    expect(promise.onRejected).to.be.a("function");
   });
 
   it("only calls onRejected once", function() {
     var callback = sinon.spy();
-    promise.then('foo', callback).reject();
+    promise.then('foo', callback);
+    promise.reject();
 
     expect(callback.called).to.be(true);
     promise.reject();
@@ -44,7 +47,8 @@ describe("then method", function() {
 
   it("calls onRejected with a reason", function() {
     var callback = sinon.spy();
-    promise.then('foo', callback).reject();
+    promise.then('foo', callback);
+    promise.reject("This is a reason.");
 
     expect(callback.calledWith("This is a reason.")).to.be(true);
   });
@@ -62,14 +66,16 @@ describe("then method", function() {
 
   it("calls onFulfilled when resolved", function() {
     var callback = sinon.spy();
-    promise.then(callback).resolve();
+    promise.then(callback);
+    promise.resolve();
 
     expect(callback.called).to.be(true);
   });
 
   it("only calls onFulfilled once", function() {
     var callback = sinon.spy();
-    promise.then(callback).resolve();
+    promise.then(callback);
+    promise.resolve();
 
     expect(callback.called).to.be(true);
     promise.resolve();
@@ -78,7 +84,8 @@ describe("then method", function() {
 
   it("calls onFulfilled with fulfillment value as first arg", function() {
     var callback = sinon.spy();
-    promise.then(callback).resolve('foo');
+    promise.then(callback);
+    promise.resolve('foo');
 
     expect(callback.calledWith('foo')).to.be(true);
   });
@@ -99,6 +106,7 @@ describe("then method", function() {
         onRejected = sinon.spy();
 
     promise.then(onFulfilled, onRejected);
+
     expect(onFulfilled.called).to.be(false);
     expect(onRejected.called).to.be(false);
   });

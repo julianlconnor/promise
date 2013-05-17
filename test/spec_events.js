@@ -31,27 +31,34 @@ describe("Events", function() {
   
   it("does not invoke a callback when an event is triggered but not listening", function() {
     var callback = sinon.spy();
+
     foo.on('bar', callback);
     foo.off('bar', this);
     foo.trigger('bar');
+
     expect(callback.called).to.be(false);
   });
 
   it("bind directly to objects", function() {
     var callback1 = sinon.spy(),
-        callback2 = sinon.spy(),
-        bar = {};
+        callback2 = sinon.spy();
 
-    events.extend(bar);
+    var Foo = function() { };
+    var Bar = function() { };
+
+    events.extend(Foo.prototype);
+    events.extend(Bar.prototype);
+
+    var foo = new Foo();
+    var bar = new Bar();
 
     foo.on('bar', callback1, foo);
     bar.on('bar', callback2, bar);
 
     foo.trigger('bar');
-    bar.trigger('bar');
 
     expect(callback1.callCount).to.be(1);
-    expect(callback2.callCount).to.be(1);
+    expect(callback2.callCount).to.be(0);
   });
 
   it("allows for multiple callbacks on one event", function() {

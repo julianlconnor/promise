@@ -1,63 +1,69 @@
+var Events = require('./events');
+
 (function(exports, module, self) {
   var S_PENDING   = "pending",
       S_RESOLVED  = "resolved",
       S_REJECTED  = "rejected";
 
-  var Promise = function() {
+  var counter = 0;
+
+  var Promise = function(fn) {
     this.state = S_PENDING;
 
-    this.value = null;
     this.reason = null;
+    counter += 1;
+    this.id = counter;
 
-    /*
-    * Lists of callbacks.
-    */
-    this.onFulfilled = [];
-    this.onRejected = [];
+    if ( fn ) fn(this.resolve, this.reject);
   };
 
   Promise.prototype.then = function(onFulfilled, onRejected) {
+    var parent = new Promise();
+
     if ( onFulfilled && typeof onFulfilled === "function" ) {
       onFulfilled.called = false;
-      this.onFulfilled.push(onFulfilled);
-    }
-    if ( onRejected && typeof onRejected === "function" ) {
-      onRejected.called = false;
-      this.onRejected.push(onRejected);
+      this.on('resolved', parent.resolve.bind(parent));
+      this.onFulfilled = onFulfilled;
     }
 
-    return this;
+    if ( onRejected && typeof onRejected === "function" ) {
+      onRejected.called = false;
+      this.on('reject', parent.reject.bind(parent));
+      this.onRejected = onRejected;
+    }
+
+    return parent;
   };
 
   Promise.prototype.resolve = function(val) {
-    var _this = this;
+    var carriedVal;
 
     if ( this.state === S_PENDING ) {
       this.state = S_RESOLVED;
-
-      each(this.onFulfilled, function(callback) {
-        callback.called = true;
-        callback.call(_this, val);
-      });
+      if ( this.onFulfilled && !this.onFulfilled.called ) {
+        this.trigger('resolved', this.onFulfilled(val), this.id);
+      }
     }
+
     return this;
   };
 
-  Promise.prototype.reject = function() {
-    var _this = this;
+  Promise.prototype.reject = function(reason) {
+    var fn;
 
     if ( this.state === S_PENDING ) {
       this.state = S_REJECTED;
-      this.reason = "This is a reason.";
+      this.reason = reason;
 
-      each(this.onRejected, function(callback) {
-        callback.called = true;
-        callback.call(_this, _this.reason);
-      });
+      if ( this.onRejected && !this.onRejected.called ) {
+        this.trigger('reject', this.onRejected(reason));
+      }
     }
 
     return this;
   };
+
+  Events.extend(Promise.prototype);
 
   function each(lst, fn) {
     for ( var i = 0; i < lst.length; i++ )
