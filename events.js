@@ -29,7 +29,7 @@
     return this;
   };
 
-  Events.trigger = function(evt, args, id) {
+  Events.trigger = function(evt, args) {
     if ( !this.eventMap ) this.eventMap = {};
     var callbacks = this.eventMap[evt] || [],
         _this = this;

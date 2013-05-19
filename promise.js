@@ -11,8 +11,6 @@ var Events = require('./events');
     this.state = S_PENDING;
 
     this.reason = null;
-    counter += 1;
-    this.id = counter;
 
     if ( fn ) fn(this.resolve, this.reject);
   };
@@ -41,7 +39,7 @@ var Events = require('./events');
     if ( this.state === S_PENDING ) {
       this.state = S_RESOLVED;
       if ( this.onFulfilled && !this.onFulfilled.called ) {
-        this.trigger('resolved', this.onFulfilled(val), this.id);
+        this.trigger('resolved', this.onFulfilled(val));
       }
     }
 
